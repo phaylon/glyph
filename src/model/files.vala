@@ -11,6 +11,7 @@ class Glyph.FileModel : TreeStore {
     public const int COL_PATH = 4;
     public const int COL_MTIME = 5;
     public const int COL_FILE = 6;
+    public const int COL_IS_VISIBLE = 7;
 
     private File _root;
 
@@ -23,7 +24,8 @@ class Glyph.FileModel : TreeStore {
             typeof(string),
             typeof(string),
             typeof(long),
-            typeof(File)
+            typeof(File),
+            typeof(bool)
         };
         set_column_types(types);
         set_sort_column_id(COL_ORDER, SortType.ASCENDING);
@@ -112,7 +114,8 @@ class Glyph.FileModel : TreeStore {
                 COL_IS_DIR, is_dir,
                 COL_ICON, is_dir ? "gtk-directory" : "gtk-file",
                 COL_ORDER, _order_string(file, is_dir),
-                COL_MTIME, mtime.tv_sec
+                COL_MTIME, mtime.tv_sec,
+                COL_IS_VISIBLE, !info.get_is_hidden()
             );
             if (is_dir) {
                 _load_children(file, iter);

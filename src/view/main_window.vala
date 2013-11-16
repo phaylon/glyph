@@ -7,6 +7,7 @@ class Glyph.MainWindowView : Object {
     public Window window { get; private set; }
     public Paned pane { get; private set; }
     public NavigationView nav { get; private set; }
+    public Statusbar statusbar { get; private set; }
 
     private Box _box;
 
@@ -14,6 +15,7 @@ class Glyph.MainWindowView : Object {
         window = new Window();
         window.title = "Glyph IDE";
         window.set_default_size(400, 300);
+        window.has_resize_grip = true;
         window.delete_event.connect(() => {
             app.controllers.main.on_window_delete();
             return false;
@@ -25,6 +27,7 @@ class Glyph.MainWindowView : Object {
         _box = new Box(Orientation.VERTICAL, 0);
         _box.homogeneous = false;
         _box.pack_start(pane, true, true, 0);
+        _box.pack_start(statusbar, false, true, 0);
     }
 
     private void _init_pane(Glyph.Application app) {
@@ -38,9 +41,16 @@ class Glyph.MainWindowView : Object {
         nav = new NavigationView(app);
     }
 
+    private void _init_statusbar(Glyph.Application app) {
+        statusbar = new Statusbar();
+    }
+
     public MainWindowView(Glyph.Application app) {
+        // individual parts
         _init_navigation(app);
         _init_pane(app);
+        _init_statusbar(app);
+        // layout
         _init_box(app);
         _init_window(app);
     }

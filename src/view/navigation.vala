@@ -17,7 +17,9 @@ class Glyph.NavigationView : Object {
 
     private void _init_file_view(Glyph.Application app) {
         file_view = new TreeView();
-        file_view.set_model(app.models.files);
+        var filter = new TreeModelFilter(app.models.files, null);
+        filter.set_visible_column(FileModel.COL_IS_VISIBLE);
+        file_view.set_model(filter);
         file_view.headers_visible = false;
         var col = new TreeViewColumn();
         var c_name = new CellRendererText();
