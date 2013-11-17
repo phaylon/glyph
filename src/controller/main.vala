@@ -9,11 +9,11 @@ class Glyph.MainController : Object {
         main_window = views.main_window;
     }
 
-    public void on_window_delete() {
-        Gtk.main_quit();
-    }
-
     public void startup() {
         main_window.window.show_all();
+    }
+
+    public void quit() {
+        main_window.window.destroy();
     }
 }

@@ -51,7 +51,7 @@ class Glyph.NavigationView : Object {
             }
             else {
                 var file = (File)file_val.dup_object();
-                app.controllers.nav.on_file_activated(file);
+                app.controllers.tabs.open_file(file);
             }
         });
     }

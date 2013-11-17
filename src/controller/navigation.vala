@@ -15,8 +15,4 @@ class Glyph.NavigationController : Object {
         });
         _nav_ticker.attach(null);
     }
-
-    public void on_file_activated(File file) {
-        stdout.printf("Open %s\n", file.get_path());
-    }
 }
