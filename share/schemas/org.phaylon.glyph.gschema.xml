@@ -1,0 +1,22 @@
+<schemalist>
+    <schema id="org.phaylon.glyph" path="/org/phaylon/glyph/">
+
+        <key name="navpane-position" type="i"><default>120</default></key>
+        <key name="window-width" type="i"><default>650</default></key>
+        <key name="window-height" type="i"><default>400</default></key>
+        <key name="show-navpane" type="b"><default>true</default></key>
+
+        <key name="source-font" type="s"><default>"Monospace 12"</default></key>
+        <key name="style-scheme" type="s"><default>"glyph-default"</default></key>
+        <key name="highlight-current-line" type="b"><default>true</default></key>
+        <key name="show-line-numbers" type="b"><default>true</default></key>
+        <key name="show-right-margin" type="b"><default>true</default></key>
+        <key name="right-margin-position" type="i"><default>78</default></key>
+
+        <key name="auto-indent" type="b"><default>true</default></key>
+        <key name="indent-width" type="i"><default>4</default></key>
+        <key name="insert-spaces-instead-of-tabs" type="b"><default>true</default></key>
+        <key name="max-undo-levels" type="i"><default>100</default></key>
+
+    </schema>
+</schemalist>

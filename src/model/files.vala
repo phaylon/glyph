@@ -15,8 +15,8 @@ class Glyph.FileModel : TreeStore {
 
     private File _root;
 
-    public FileModel() {
-        _root = File.new_for_path(".");
+    public FileModel(File path) {
+        _root = path;
         Type[] types = {
             typeof(string),
             typeof(bool),

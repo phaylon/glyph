@@ -14,6 +14,9 @@ class Glyph.MenuView : Object {
         root = menubar;
         accel_group = new Gtk.AccelGroup();
         _init_file_menu(app);
+        _init_edit_menu(app);
+        _init_view_menu(app);
+        _init_help_menu(app);
     }
 
     private void _accel(Gtk.MenuItem item, uint key, ModifierType mod) {
@@ -46,11 +49,55 @@ class Glyph.MenuView : Object {
         return item;
     }
 
-    private void _init_file_menu(Glyph.Application app) {
-        var item = new Gtk.MenuItem.with_mnemonic("_File");
+    private Gtk.CheckMenuItem _init_toggle(
+        string label,
+        Gtk.Menu menu,
+        Glyph.Application app,
+        string setting_name
+    ) {
+        var item = new Gtk.CheckMenuItem.with_mnemonic(label);
+        menu.append(item);
+        app.models.settings.bind(
+            "show-navpane",
+            item,
+            "active",
+            SettingsBindFlags.DEFAULT
+        );
+        return item;
+    }
+
+    private Gtk.Menu _init_menu(Glyph.Application app, string label) {
+        var item = new Gtk.MenuItem.with_mnemonic(label);
         var menu = new Gtk.Menu();
         item.set_submenu(menu);
         menubar.append(item);
+        return menu;
+    }
+
+    private void _init_view_menu(Glyph.Application app) {
+        var menu = _init_menu(app, "_View");
+        _accel(
+            _init_toggle("Show _Navigation", menu, app, "show-navpane"),
+            Key.N, ModifierType.CONTROL_MASK
+        );
+    }
+
+    private void _init_help_menu(Glyph.Application app) {
+        var menu = _init_menu(app, "_Help");
+        _init_item("_About...", menu, app, (app) => {
+            stderr.printf("About\n");
+        });
+    }
+
+    private void _init_edit_menu(Glyph.Application app) {
+        var menu = _init_menu(app, "_Edit");
+        _init_item("_Preferences...", menu, app, (app) => {
+            app.controllers.prefs.show();
+        });
+    }
+
+    private void _init_file_menu(Glyph.Application app) {
+        var menu = _init_menu(app, "_File");
         _init_item("_New...", menu, app, (app) => {
             stderr.printf("New\n");
         });

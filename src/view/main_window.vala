@@ -15,11 +15,15 @@ class Glyph.MainWindowView : Object {
 
     private void _init_window(Glyph.Application app) {
         window = new Gtk.ApplicationWindow(app);
-        window.title = "Glyph IDE";
-        window.set_default_size(600, 400);
+        var path = app.models.working_path.get_path();
+        window.title = @"Glyph IDE - $path";
         window.has_resize_grip = true;
         window.add(_box);
         window.add_accel_group(menubar.accel_group);
+        window.delete_event.connect(() => {
+            app.controllers.main.quit();
+            return false;
+        });
     }
 
     private void _init_box(Glyph.Application app) {
@@ -35,10 +39,24 @@ class Glyph.MainWindowView : Object {
         pane.position = 150;
         pane.add1(nav.root);
         pane.add2(editing.root);
+        app.models.settings.bind(
+            "navpane-position",
+            pane,
+            "position",
+            SettingsBindFlags.DEFAULT
+        );
     }
 
     private void _init_navigation(Glyph.Application app) {
         nav = new NavigationView(app);
+        nav.root.show_all();
+        nav.root.no_show_all = true;
+        app.models.settings.bind(
+            "show-navpane",
+            nav.root,
+            "visible",
+            SettingsBindFlags.GET
+        );
     }
 
     private void _init_statusbar(Glyph.Application app) {

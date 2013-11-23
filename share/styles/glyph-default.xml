@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<style-scheme id="glyph-default" _name="Glyph Default (Dark)" version="1.0">
+    <author>Robert Sedlacek</author>
+    <_description>Dark default color scheme for Glyph</_description>
+    <color name="color-_builtin-fg" value="#649664"/>
+    <color name="color-_comment-fg" value="#787878"/>
+    <color name="color-_constant-fg" value="#7d967d"/>
+    <color name="color-_doc_comment_element-fg" value="#969696"/>
+    <color name="color-_error-fg" value="#dc0000"/>
+    <color name="color-_floating_point-fg" value="#7d967d"/>
+    <color name="color-_identifier-fg" value="#649664"/>
+    <color name="color-_keyword-fg" value="#649664"/>
+    <color name="color-_note-fg" value="#969696"/>
+    <color name="color-_preprocessor-fg" value="#649664"/>
+    <color name="color-_shebang-fg" value="#ff7800"/>
+    <color name="color-_special_char-fg" value="#4b644b"/>
+    <color name="color-_special_constant-fg" value="#4b644b"/>
+    <color name="color-_statement-fg" value="#649664"/>
+    <color name="color-_string-fg" value="#7d967d"/>
+    <color name="color-_type-fg" value="#9696c8"/>
+    <color name="color-bracket_match-bg" value="#1e1e1e"/>
+    <color name="color-bracket_match-fg" value="#ffff00"/>
+    <color name="color-bracket_mismatch-fg" value="#ffff00"/>
+    <color name="color-current_line-bg" value="#141414"/>
+    <color name="color-cursor-bg" value="#000000"/>
+    <color name="color-draw_spaces-bg" value="#dc0000"/>
+    <color name="color-draw_spaces-fg" value="#dc0000"/>
+    <color name="color-line_numbers-bg" value="#000000"/>
+    <color name="color-line_numbers-fg" value="#9b9b9b"/>
+    <color name="color-right_margin-bg" value="#000000"/>
+    <color name="color-right_margin-fg" value="#8c8c8c"/>
+    <color name="color-search_match-fg" value="#cdcd00"/>
+    <color name="color-selection-bg" value="#000000"/>
+    <color name="color-text-bg" value="#1e1e1e"/>
+    <color name="color-text-fg" value="#aaaaaa"/>
+    <style name="bracket-match" background="color-bracket_match-bg" foreground="color-bracket_match-fg" bold="true"/>
+    <style name="bracket-mismatch" foreground="color-bracket_mismatch-fg"/>
+    <style name="current-line" background="color-current_line-bg"/>
+    <style name="cursor" background="color-cursor-bg"/>
+    <style name="def:builtin" foreground="color-_builtin-fg" bold="true"/>
+    <style name="def:comment" foreground="color-_comment-fg"/>
+    <style name="def:constant" foreground="color-_constant-fg"/>
+    <style name="def:doc-comment-element" foreground="color-_doc_comment_element-fg" bold="true"/>
+    <style name="def:error" foreground="color-_error-fg"/>
+    <style name="def:floating-point" foreground="color-_floating_point-fg"/>
+    <style name="def:identifier" foreground="color-_identifier-fg"/>
+    <style name="def:keyword" foreground="color-_keyword-fg"/>
+    <style name="def:note" foreground="color-_note-fg" bold="true"/>
+    <style name="def:preprocessor" foreground="color-_preprocessor-fg" bold="true"/>
+    <style name="def:shebang" foreground="color-_shebang-fg" bold="true"/>
+    <style name="def:special-char" foreground="color-_special_char-fg"/>
+    <style name="def:special-constant" foreground="color-_special_constant-fg"/>
+    <style name="def:statement" foreground="color-_statement-fg" bold="true"/>
+    <style name="def:string" foreground="color-_string-fg"/>
+    <style name="def:type" foreground="color-_type-fg"/>
+    <style name="draw-spaces" background="color-draw_spaces-bg" foreground="color-draw_spaces-fg"/>
+    <style name="line-numbers" background="color-line_numbers-bg" foreground="color-line_numbers-fg"/>
+    <style name="right-margin" background="color-right_margin-bg" foreground="color-right_margin-fg"/>
+    <style name="search-match" foreground="color-search_match-fg"/>
+    <style name="selection" background="color-selection-bg"/>
+    <style name="text" background="color-text-bg" foreground="color-text-fg"/>
+</style-scheme>
