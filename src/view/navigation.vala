@@ -29,6 +29,16 @@ class Glyph.NavigationView : Object {
         col.add_attribute(c_name, "text", Glyph.FileModel.COL_NAME);
         col.add_attribute(c_icon, "stock-id", Glyph.FileModel.COL_ICON);
         file_view.append_column(col);
+        TargetEntry target_file = { "STRING", 0, Target.STRING };
+        TargetEntry[] targets = { target_file };
+        file_view.enable_model_drag_source(
+            Gdk.ModifierType.BUTTON1_MASK,
+            targets,
+            Gdk.DragAction.COPY
+        );
+        file_view.drag_data_get.connect((ctx, data, type) => {
+            app.controllers.dnd.navigation_get(file_view, ctx, data, type);
+        });
         _on_activation(app, file_view);
     }
 

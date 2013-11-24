@@ -15,8 +15,6 @@ class Glyph.BufferModel : SourceBuffer {
     };
 
     public signal void rebuffer(BufferModel new_buffer);
-    public signal void reorg_begin();
-    public signal void reorg_end();
 
     public BufferModel.from_file(
         File path,

@@ -74,27 +74,31 @@ class Glyph.SourceContentArea : SourceView {
     }
 
     private void _update_focus_mode() {
-        var buffer = real_buffer;
+        //var buffer = real_buffer;
         if (this.has_focus) {
             this.highlight_current_line = should_highlight_current_line;
-            if (_cursor_cache != null) {
+            /*if (_cursor_cache != null) {
                 TextIter iter;
                 buffer.get_iter_at_mark(out iter, _cursor_cache);
                 buffer.place_cursor(iter);
                 buffer.delete_mark(_cursor_cache);
                 _cursor_cache = null;
-            }
+            }*/
         }
         else {
             this.highlight_current_line = false;
-            if (_cursor_cache == null) {
+            /*if (_cursor_cache == null) {
                 var mark = buffer.get_mark("insert");
                 TextIter iter;
                 buffer.get_iter_at_mark(out iter, mark);
                 _cursor_cache = new TextMark(_cursor_name, false);
                 buffer.add_mark(_cursor_cache, iter);
-            }
+            }*/
         }
+    }
+
+    public void replace_buffer(BufferModel buffer) {
+        _set_buffer(buffer);
     }
 
     private void _set_buffer(BufferModel buffer) {
@@ -147,17 +151,22 @@ class Glyph.EditingView : Object {
     public Widget root;
     public Notebook notebook;
     private GLib.Settings _settings;
+    private Glyph.Application _app;
 
     public EditingView(Glyph.Application app) {
         _settings = app.models.settings;
+        _app = app;
         _init_notebook(app);
         root = notebook;
     }
 
     public void open_tab(BufferModel buffer) {
-        var source = new SourceArea(buffer, _settings);
-        var content = new ContentArea(source, _settings);
+        var source = new SourceArea(buffer, _settings, _app);
+        var content = new ContentArea(source, _settings, _app);
         var label = new Label(buffer.file.get_basename());
+        label.ellipsize = Pango.EllipsizeMode.END;
+        label.width_chars = 15;
+        label.xalign = 0.0f;
         label.show_all();
         content.show_all();
         var page = notebook.append_page(content, label);
@@ -166,50 +175,7 @@ class Glyph.EditingView : Object {
 
     private void _init_notebook(Glyph.Application app) {
         notebook = new Notebook();
-    }
-}
-
-class Glyph.SourceLabel : Label {
-
-    private BufferModel _buffer;
-
-    public SourceLabel(BufferModel buffer) {
-        this.xalign = 0.0f;
-        this.xpad = 5;
-        this.ypad = 1;
-        this.use_markup = true;
-        this.ellipsize = Pango.EllipsizeMode.START;
-        _set_buffer(buffer);
-        _update();
-    }
-
-    private void _set_buffer(BufferModel buffer) {
-        _buffer = buffer;
-        buffer.notify["file"].connect(() => {
-            _update();
-        });
-        buffer.rebuffer.connect((old, new_buffer) => {
-            _set_buffer(new_buffer);
-            _update();
-        });
-    }
-
-    private void _update() {
-        var file = _buffer.file;
-        string path;
-        string tag;
-        if (file != null) {
-            path = file.get_path();
-            tag = "b";
-        }
-        else {
-            path = "(None)";
-            tag = "i";
-        }
-        var open = @"<$tag>";
-        var close = @"</$tag>";
-        var path_esc = GLib.Markup.escape_text(path, path.length);
-        this.label = @"$open$path_esc$close";
+        notebook.tab_pos = PositionType.RIGHT;
     }
 }
 
@@ -220,24 +186,57 @@ public struct Glyph.ScrollPosition {
 
 class Glyph.SourceArea : EventBox {
 
-    private Box _box;
-    private ulong _popup_h;
     private SourceContentArea _src;
     private ScrolledWindow _scrolled;
     private GLib.Settings _settings;
     private Label _label;
     private BufferModel _buffer;
-    private ScrollPosition? _reorg_cache;
+    private Glyph.Application _app;
 
-    public SourceArea(BufferModel buffer, GLib.Settings settings) {
-        //this.orientation = Orientation.VERTICAL;
+    public SourceArea(
+        BufferModel buffer,
+        GLib.Settings settings,
+        Glyph.Application app
+    ) {
         _settings = settings;
-        _src = new SourceContentArea(buffer, settings, this);
-        _set_buffer(buffer);
-        _scrolled = new ScrolledWindow(null, null);
-        _scrolled.add(_src);
-        _scrolled.shadow_type = ShadowType.IN;
-        _popup_h = _src.populate_popup.connect((src, menu) => {
+        _app = app;
+        _init_label();
+        _init_source(buffer);
+        _init_popup();
+        var box = new Box(Orientation.VERTICAL, 0);
+        add(box);
+        box.pack_start(_label, false, true, 0);
+        box.pack_start(_scrolled, true, true, 0);
+        show_all();
+        this.enter_notify_event.connect(() => {
+            _src.grab_focus();
+            return false;
+        });
+        TargetEntry target_file = { "STRING", 0, Target.STRING };
+        TargetEntry[] targets = { target_file };
+        Gtk.drag_dest_set(
+            _src,
+            Gtk.DestDefaults.ALL,
+            targets,
+            Gdk.DragAction.COPY
+        );
+        _src.drag_data_received.connect((w, ctx, x, y, data, type, time) => {
+            var src = w as SourceContentArea;
+            Signal.stop_emission_by_name(w, "drag_data_received");
+            _app.controllers.dnd.source_receive(this, src, ctx, data, type, time);
+        });
+        _src.drag_motion.connect((w, ctx, x, y, time) => {
+            return false;
+        });
+        _src.drag_drop.connect((w, ctx, x, y, time) => {
+            var src = w as SourceContentArea;
+            Signal.stop_emission_by_name(w, "drag_drop");
+            return _app.controllers.dnd.source_drop(src, ctx, time);
+        });
+    }
+
+    private void _init_popup() {
+        _src.populate_popup.connect((src, menu) => {
             menu.append(new SeparatorMenuItem());
             var s_v = new Gtk.MenuItem.with_mnemonic("Split Vertically");
             menu.append(s_v);
@@ -257,20 +256,22 @@ class Glyph.SourceArea : EventBox {
             });
             menu.show_all();
         });
-        _label = new SourceLabel(buffer);
-        _box = new Box(Orientation.VERTICAL, 0);
-        add(_box);
-        _box.pack_start(_label, false, true, 0);
-        _box.pack_start(_scrolled, true, true, 0);
-        show_all();
-        this.enter_notify_event.connect(() => {
-            _src.grab_focus();
-            return false;
-        });
     }
 
-    ~SourceArea() {
-        //_src.disconnect(_popup_h);
+    private void _init_source(BufferModel buffer) {
+        _src = new SourceContentArea(buffer, _settings, this);
+        _set_buffer(buffer);
+        _scrolled = new ScrolledWindow(null, null);
+        _scrolled.add(_src);
+        _scrolled.shadow_type = ShadowType.IN;
+    }
+
+    private void _init_label() {
+        _label = new Label("");
+        _label.ellipsize = Pango.EllipsizeMode.START;
+        _label.xalign = 0.0f;
+        _label.xpad = 5;
+        _label.ypad = 1;
     }
 
     public void set_scroll_position(ScrollPosition pos) {
@@ -288,17 +289,21 @@ class Glyph.SourceArea : EventBox {
         return pos;
     }
 
+    public void replace_buffer(BufferModel buffer) {
+        _src.replace_buffer(buffer);
+        _set_buffer(buffer);
+    }
+
     private void _set_buffer(BufferModel buffer) {
         _buffer = buffer;
+        if (buffer.file != null) {
+            _label.label = buffer.file.get_path();
+        }
+        else {
+            _label.label = "(None)";
+        }
         buffer.rebuffer.connect((old, new_buffer) => {
             _set_buffer(new_buffer);
-        });
-        buffer.reorg_begin.connect(() => {
-            _reorg_cache = get_scroll_position();
-        });
-        buffer.reorg_begin.connect(() => {
-            set_scroll_position(_reorg_cache);
-            _reorg_cache = null;
         });
     }
 
@@ -346,10 +351,16 @@ class Glyph.ContentSplit : Paned {
 class Glyph.ContentArea : Box {
 
     private GLib.Settings _settings;
+    private Glyph.Application _app;
     public Widget root { get; private set; }
 
-    public ContentArea(Widget widget, GLib.Settings settings) {
+    public ContentArea(
+        Widget widget,
+        GLib.Settings settings,
+        Glyph.Application app
+    ) {
         _settings = settings;
+        _app = app;
         pack_start(widget, true, true, 0);
         show_all();
         root = widget;
@@ -376,12 +387,12 @@ class Glyph.ContentArea : Box {
         var current_buffer = _find_child_buffer();
         var current_pos = _find_child_scroll_position();
         _clear();
-        var src_l = new SourceArea(current_buffer, _settings);
-        var src_r = new SourceArea(buffer, _settings);
+        var src_l = new SourceArea(current_buffer, _settings, _app);
+        var src_r = new SourceArea(buffer, _settings, _app);
         var split = new ContentSplit(
             ori,
-            new ContentArea(src_l, _settings),
-            new ContentArea(src_r, _settings)
+            new ContentArea(src_l, _settings, _app),
+            new ContentArea(src_r, _settings, _app)
         );
         pack_start(split, true, true, 0);
         show_all();
