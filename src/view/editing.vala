@@ -73,18 +73,22 @@ class Glyph.SnapAdjustment : Adjustment {
     public SnapAdjustment(SourceContentArea src) {
         _src = src;
         this.notify["value"].connect(() => {
-            var pos = this.value;
-            TextIter iter;
-            int top;
-            src.get_line_at_y(out iter, (int)pos, out top);
-            var line = iter.get_line();
-            if (line != _line) {
-                _line = line;
-                _allow = true;
-                this.value = top;
-                value_changed();
-            }
+            _current_line_check();
         });
+    }
+
+    private void _current_line_check() {
+        var pos = this.value;
+        TextIter iter;
+        int top;
+        _src.get_line_at_y(out iter, (int)pos, out top);
+        var line = iter.get_line();
+        if (line != _line) {
+            _line = line;
+            _allow = true;
+            this.value = top;
+            value_changed();
+        }
     }
 
     public override void value_changed() {
@@ -138,36 +142,40 @@ class Glyph.EditingPage : Box {
         scrolled.add(_src);
         scrolled.shadow_type = ShadowType.IN;
         scrolled.size_allocate.connect((alloc) => {
-            Gdk.Rectangle rect;
-            _src.get_visible_rect(out rect);
-            TextIter last_line_iter;
-            int last_line_top;
-            _src.get_line_at_y(
-                out last_line_iter,
-                rect.y + (rect.height - 1) + _src.margin_bottom,
-                out last_line_top
-            );
-            int last_line_window_top;
-            int __ignore;
-            int last_line_height;
-            _src.get_line_yrange(
-                last_line_iter,
-                out __ignore,
-                out last_line_height
-            );
-            _src.buffer_to_window_coords(
-                TextWindowType.WIDGET,
-                1,
-                last_line_top,
-                null,
-                out last_line_window_top
-            );
-            if (_content_size_exceeds(alloc.height)) {
-                var left = alloc.height - last_line_window_top;
-                _src.margin_bottom = left - 2;
-            }
+            _recalc_end_margin(alloc);
         });
         pack_start(scrolled, true, true, 0);
+    }
+
+    private void _recalc_end_margin(Gtk.Allocation alloc) {
+        Gdk.Rectangle rect;
+        _src.get_visible_rect(out rect);
+        TextIter last_line_iter;
+        int last_line_top;
+        _src.get_line_at_y(
+            out last_line_iter,
+            rect.y + (rect.height - 1) + _src.margin_bottom,
+            out last_line_top
+        );
+        int last_line_window_top;
+        int __ignore;
+        int last_line_height;
+        _src.get_line_yrange(
+            last_line_iter,
+            out __ignore,
+            out last_line_height
+        );
+        _src.buffer_to_window_coords(
+            TextWindowType.WIDGET,
+            1,
+            last_line_top,
+            null,
+            out last_line_window_top
+        );
+        if (_content_size_exceeds(alloc.height)) {
+            var left = alloc.height - last_line_window_top;
+            _src.margin_bottom = left - 2;
+        }
     }
 
     private bool _content_size_exceeds(int size) {
