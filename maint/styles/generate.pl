@@ -1,12 +1,7 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
-use Template;
 use FindBin;
-use Path::Tiny;
-
-my $skel = do { local $/; <DATA> };
-my $tt = Template->new;
 
 do {
     package RGB;
@@ -100,43 +95,63 @@ sub scheme {
         }
     }
     print "$id...\n";
-    $tt->process(\$skel, {
+    my $xml = generate_output(
         id => $id,
         %arg,
         styles => \%style,
         colors => \%color,
-    }, path("$FindBin::Bin/../../share/styles/$id.xml")->stringify)
-        or die "Template Error: " . $tt->error;
+    );
+    my $path = "$FindBin::Bin/../../share/styles";
+    my $file = "$path/$id.xml";
+    mkdir $path
+        or die "Unable to create directory $path: $!\n"
+        unless -d $path;
+    open my $fh, '>', $file
+        or die "Unable to write to $file: $!\n";
+    print $fh "$xml\n";
 }
 
-__DATA__
-<?xml version="1.0" encoding="UTF-8"?>
-<style-scheme id="[% id %]" _name="[% name %]" version="1.0">
-    <author>[% author %]</author>
-    <_description>[% description %]</_description>
-    [%- FOREACH color = colors.keys.sort %]
-    <color name="[% color %]" value="[% colors.$color.hex %]"/>
-    [%- END %]
-    [%- FOREACH style = styles.keys.sort %]
-    <style name="[% style %]"
-        [%~ PROCESS attr name='background', value=styles.$style.bg ~%]
-        [%~ PROCESS attr name='foreground', value=styles.$style.fg ~%]
-        [%~ PROCESS battr name='bold', value=styles.$style.bold ~%]
-        [%~ PROCESS battr name='italic', value=styles.$style.italic ~%]
-        />
-    [%- END %]
-</style-scheme>
-[%-
-    BLOCK battr;
-        IF value;
-            %] [% name %]="true"[%
-        END;
-    END
-%]
-[%-
-    BLOCK attr;
-        IF value;
-            %] [% name %]="[% value %]"[%
-        END;
-    END
-%]
+sub _indent {
+    return map { "  $_" } @_;
+}
+
+sub _if_def {
+    my ($val, $cb) = @_;
+    return defined($val) ? do { local $_ = $val; $cb->() } : ();
+}
+
+sub generate_output {
+    my %arg = @_;
+    return join("\n",
+        q{<?xml version="1.0" encoding="UTF-8"?>},
+        sprintf(q{<style-scheme id="%s" _name="%s" version="1.0">},
+            $arg{id},
+            $arg{name},
+        ),
+        _indent(
+            sprintf(q{<author>%s</author>}, $arg{author}),
+            sprintf(q{<_description>%s</_description>}, $arg{description}),
+            (map {
+                sprintf(q{<color name="%s" value="%s"/>},
+                    $_,
+                    $arg{colors}{ $_ }->hex,
+                );
+            } sort keys %{ $arg{colors} }),
+            (map {
+                sprintf(q{<style %s/>}, join " ",
+                    map { sprintf '%s="%s"', @$_ }
+                    [name => $_],
+                    (grep { defined($_->[1]) }
+                        [background => $arg{styles}{ $_ }{bg}],
+                        [foreground => $arg{styles}{ $_ }{fg}],
+                    ),
+                    (map { [$_->[0], 'true'] } grep { $_->[1] }
+                        [bold => $arg{styles}{ $_ }{bold}],
+                        [italic => $arg{styles}{ $_ }{bold}],
+                    ),
+                );
+            } sort keys %{ $arg{styles} }),
+        ),
+        q{</style-schema>},
+    );
+}
