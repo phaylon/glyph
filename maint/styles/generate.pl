@@ -1,5 +1,6 @@
 #!/usr/bin/env perl
-use strictures 1;
+use strict;
+use warnings;
 use Template;
 use FindBin;
 use Path::Tiny;
