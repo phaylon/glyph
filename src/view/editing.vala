@@ -148,6 +148,13 @@ class Glyph.EditingPage : Box {
                 out last_line_top
             );
             int last_line_window_top;
+            int __ignore;
+            int last_line_height;
+            _src.get_line_yrange(
+                last_line_iter,
+                out __ignore,
+                out last_line_height
+            );
             _src.buffer_to_window_coords(
                 TextWindowType.WIDGET,
                 1,
@@ -155,8 +162,10 @@ class Glyph.EditingPage : Box {
                 null,
                 out last_line_window_top
             );
-            var left = alloc.height - last_line_window_top;
-            _src.margin_bottom = left - 2;
+            if (alloc.height < (last_line_window_top + last_line_height)) {
+                var left = alloc.height - last_line_window_top;
+                _src.margin_bottom = left - 2;
+            }
         });
         pack_start(scrolled, true, true, 0);
     }
