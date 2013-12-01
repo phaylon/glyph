@@ -162,12 +162,22 @@ class Glyph.EditingPage : Box {
                 null,
                 out last_line_window_top
             );
-            if (alloc.height < (last_line_window_top + last_line_height)) {
+            if (_content_size_exceeds(alloc.height)) {
                 var left = alloc.height - last_line_window_top;
                 _src.margin_bottom = left - 2;
             }
         });
         pack_start(scrolled, true, true, 0);
+    }
+
+    private bool _content_size_exceeds(int size) {
+        TextIter start;
+        TextIter end;
+        buffer.get_bounds(out start, out end);
+        int top;
+        int height;
+        _src.get_line_yrange(end, out top, out height);
+        return size < (top + height);
     }
 
     private void _init_label() {
