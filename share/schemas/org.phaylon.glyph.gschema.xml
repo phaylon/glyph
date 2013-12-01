@@ -4,6 +4,8 @@
         <key name="navpane-position" type="i"><default>120</default></key>
         <key name="window-width" type="i"><default>650</default></key>
         <key name="window-height" type="i"><default>400</default></key>
+        <key name="window-x" type="i"><default>-1</default></key>
+        <key name="window-y" type="i"><default>-1</default></key>
         <key name="show-navpane" type="b"><default>true</default></key>
         <key name="show-tabs" type="b"><default>true</default></key>
 
