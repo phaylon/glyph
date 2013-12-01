@@ -5,6 +5,7 @@
         <key name="window-width" type="i"><default>650</default></key>
         <key name="window-height" type="i"><default>400</default></key>
         <key name="show-navpane" type="b"><default>true</default></key>
+        <key name="show-tabs" type="b"><default>true</default></key>
 
         <key name="source-font" type="s"><default>"Monospace 12"</default></key>
         <key name="style-scheme" type="s"><default>"glyph-default"</default></key>

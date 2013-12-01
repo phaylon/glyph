@@ -7,6 +7,7 @@ valac -o glyph --verbose -X -w\
     --pkg gee-1.0\
     --pkg gtksourceview-3.0\
     --pkg pango\
+    --pkg json-glib-1.0\
     src/*.vala\
     src/view/*.vala\
     src/controller/*.vala\

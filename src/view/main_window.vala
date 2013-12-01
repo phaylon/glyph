@@ -12,11 +12,12 @@ class Glyph.MainWindowView : Object {
     public EditingView editing { get; private set; }
 
     private Box _box;
+    private File _cwd;
 
     private void _init_window(Glyph.Application app) {
         window = new Gtk.ApplicationWindow(app);
-        var path = app.models.working_path.get_path();
-        window.title = @"Glyph IDE - $path";
+        _cwd = app.models.working_path;
+        //window.title = @"Glyph IDE - $path";
         window.has_resize_grip = true;
         window.add(_box);
         window.add_accel_group(menubar.accel_group);
@@ -31,7 +32,7 @@ class Glyph.MainWindowView : Object {
         _box.homogeneous = false;
         _box.pack_start(menubar.root, false, true, 0);
         _box.pack_start(pane, true, true, 0);
-        _box.pack_start(statusbar, false, true, 0);
+        //_box.pack_start(statusbar, false, true, 0);
     }
 
     private void _init_pane(Glyph.Application app) {
@@ -71,6 +72,32 @@ class Glyph.MainWindowView : Object {
         editing = new EditingView(app);
     }
 
+    private void _init_signals(Glyph.Application app) {
+        _update_title(null);
+        app.models.active_buffer.changed.connect((active, buffer) => {
+            _update_title(buffer);
+        });
+    }
+
+    private void _update_title(BufferModel? buffer) {
+        var app_title = "Glyph";
+        var separator = ": ";
+        if (buffer != null) {
+            var doc_title = "(New File)";
+            var postfix = "";
+            if (buffer.file != null) {
+                doc_title = buffer.file.get_path();
+            }
+            if (buffer.get_modified()) {
+                postfix = " [modified]";
+            }
+            window.title = app_title + separator + doc_title + postfix;
+        }
+        else {
+            window.title = app_title + separator + _cwd.get_path();
+        }
+    }
+
     public MainWindowView(Glyph.Application app) {
         // individual parts
         _init_navigation(app);
@@ -81,5 +108,7 @@ class Glyph.MainWindowView : Object {
         // layout
         _init_box(app);
         _init_window(app);
+        // signals
+        _init_signals(app);
     }
 }

@@ -28,7 +28,8 @@ class Glyph.MainController : Object {
             _settings.set_int("window-width", width);
             _settings.set_int("window-height", height);
         }
-        _settings.sync();
+        GLib.Settings.sync();
+        //_settings.sync();
         _main_window.window.destroy();
     }
 }

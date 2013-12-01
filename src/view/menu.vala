@@ -3,6 +3,24 @@ using Gtk;
 using Gdk;
 using Glyph;
 
+class Glyph.SensitiveMenuItem : Gtk.MenuItem {
+
+    private GLib.Binding _sens_binding;
+
+    public SensitiveMenuItem(string label, Sensitivity? sens) {
+        if (sens != null) {
+            _sens_binding = sens.bind_property(
+                "sensitivity",
+                this,
+                "sensitive",
+                BindingFlags.DEFAULT | BindingFlags.SYNC_CREATE
+            );
+        }
+        this.label = label;
+        this.use_underline = true;
+    }
+}
+
 class Glyph.MenuView : Object {
 
     public Widget root;
@@ -16,6 +34,7 @@ class Glyph.MenuView : Object {
         _init_file_menu(app);
         _init_edit_menu(app);
         _init_view_menu(app);
+        _init_go_menu(app);
         _init_help_menu(app);
     }
 
@@ -39,9 +58,10 @@ class Glyph.MenuView : Object {
         string label,
         Gtk.Menu menu,
         Glyph.Application app,
-        ItemCallback cb
+        ItemCallback cb,
+        Sensitivity? sens = null
     ) {
-        var item = new Gtk.MenuItem.with_mnemonic(label);
+        var item = new SensitiveMenuItem(label, sens);
         menu.append(item);
         item.activate.connect(() => {
             cb(app);
@@ -58,7 +78,7 @@ class Glyph.MenuView : Object {
         var item = new Gtk.CheckMenuItem.with_mnemonic(label);
         menu.append(item);
         app.models.settings.bind(
-            "show-navpane",
+            setting_name,
             item,
             "active",
             SettingsBindFlags.DEFAULT
@@ -78,7 +98,27 @@ class Glyph.MenuView : Object {
         var menu = _init_menu(app, "_View");
         _accel(
             _init_toggle("Show _Navigation", menu, app, "show-navpane"),
-            Key.N, ModifierType.CONTROL_MASK
+            Key.Y, ModifierType.CONTROL_MASK
+        );
+        _accel(
+            _init_toggle("Show File _Tabs", menu, app, "show-tabs"),
+            Key.T, ModifierType.CONTROL_MASK
+        );
+    }
+
+    private void _init_go_menu(Glyph.Application app) {
+        var menu = _init_menu(app, "_Go");
+        _accel(
+            _init_item("_Previous Tab", menu, app, (app) => {
+                app.controllers.tabs.prev_tab();
+            }),
+            Key.Left, ModifierType.MOD1_MASK
+        );
+        _accel(
+            _init_item("_Next Tab", menu, app, (app) => {
+                app.controllers.tabs.next_tab();
+            }),
+            Key.Right, ModifierType.MOD1_MASK
         );
     }
 
@@ -98,9 +138,18 @@ class Glyph.MenuView : Object {
 
     private void _init_file_menu(Glyph.Application app) {
         var menu = _init_menu(app, "_File");
-        _init_item("_New...", menu, app, (app) => {
-            stderr.printf("New\n");
-        });
+        _accel(
+            _init_item("_New", menu, app, (app) => {
+                app.controllers.tabs.open_new();
+            }),
+            Key.N, ModifierType.CONTROL_MASK
+        );
+        _accel(
+            _init_item("_Close", menu, app, (app) => {
+                app.controllers.tabs.close_current();
+            }, app.models.buffers.count_sensitivity),
+            Key.W, ModifierType.CONTROL_MASK
+        );
         _init_separator(menu);
         _accel(
             _init_item("_Quit", menu, app, (app) => {

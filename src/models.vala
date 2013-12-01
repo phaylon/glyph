@@ -9,14 +9,19 @@ class Glyph.ModelManager : Object {
     public Gtk.SourceLanguageManager languages { get; private set; }
     public Gtk.SourceStyleSchemeManager styles { get; private set; }
     public File working_path { get; private set; }
+    public ActiveBuffer active_buffer { get; private set; }
+    public Session? session { get; private set; }
 
     public ModelManager() {
-        working_path = File.new_for_path(".");
-        files = new FileModel(working_path);
+        var work = File.new_for_path(".");
+        working_path = work;
+        files = new FileModel(work);
         languages = Gtk.SourceLanguageManager.get_default();
         _init_settings();
         _init_styles();
-        buffers = new BufferManager(languages, styles, settings);
+        buffers = new BufferManager(languages, styles, settings, work);
+        active_buffer = buffers.active;
+        session = new Session(this);
     }
 
     private void _init_styles() {

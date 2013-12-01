@@ -88,7 +88,7 @@ class Glyph.FileModel : TreeStore {
                 map.unset(file.get_path());
             }
             else {
-                remove(item_iter);
+                remove(ref item_iter);
             }
         }
         foreach (File file in map.values) {
