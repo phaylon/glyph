@@ -152,6 +152,6 @@ sub generate_output {
                 );
             } sort keys %{ $arg{styles} }),
         ),
-        q{</style-schema>},
+        q{</style-scheme>},
     );
 }
